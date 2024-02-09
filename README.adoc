@@ -1,0 +1,8 @@
+= scheme-motions.nvim
+
+Manipulate TSNodes, rather than raw text motions.
+
+Scheme is almost uniquely poorly situated to strictly text-based editing.
+Something like `paredit` or `parinfer` provides a better editing experience, though both have their flaws.
+
+This aims to provide a more vim-first approach to manipulating s-expressions.
