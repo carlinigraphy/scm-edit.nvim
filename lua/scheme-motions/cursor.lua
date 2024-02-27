@@ -59,6 +59,7 @@ function Cursor.get(window)
 end
 
 
+---@param node    TSNode
 ---@param side    "start" | "end"
 ---@param window? integer
 function Cursor:set(node, side, window)
@@ -77,5 +78,30 @@ function Cursor:set(node, side, window)
 
    return vim.api.nvim_win_set_cursor(window or 0, {row+1, column})
 end
+
+
+---@param  node    TSNode
+---@return boolean
+-- 
+-- Is the cursor behind the left edge of the node?
+function Cursor:is_behind(node)
+   local node_row, node_col = node:start()
+   return (node_row   > self.row) or   -- Later line.
+          ((node_row == self.row) and  -- Same line...
+           (node_col  > self.column))  -- ...later column.
+end
+
+
+---@param  node    TSNode
+---@return boolean
+-- 
+-- Is the cursor behind the left edge of the node?
+function Cursor:is_ahead(node)
+   local node_row, node_col = node:end_()
+   return (node_row   < self.row) or   -- Previous line.
+          ((node_row == self.row) and  -- Same line...
+           (node_col  < self.column))  -- ...previous column.
+end
+
 
 return Cursor

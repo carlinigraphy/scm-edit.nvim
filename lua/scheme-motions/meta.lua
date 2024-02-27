@@ -1,0 +1,26 @@
+---@meta [meta]
+
+-- [gf ref.]
+-- ~/.local/share/nvim/lazy/nvim-paredit/lua/nvim-paredit/
+-- ~/.local/share/nvim/lazy/nvim-paredit-scheme/lua/nvim-paredit-scheme/extension.lua
+
+---@class  TSNode
+---@field  child                fun(self: TSNode, index: integer): TSNode?
+---@field  child_count	        fun(self: TSNode, ): integer
+---@field  end_	              fun(self: TSNode, ): { row: integer, column: integer }
+---@field  equal                fun(self: TSNode, node: TSNode): boolean
+---@field  id	                 fun(self: TSNode, ): string
+---@field  iter_children	     fun(self: TSNode, ): TSNode?
+---@field  named	              fun(self: TSNode, ): boolean
+---@field  named_child          fun(self: TSNode, index: integer): TSNode | nil
+---@field  named_child_count	  fun(self: TSNode, ): integer
+---@field  next_named_sibling	  fun(self: TSNode, ): TSNode?
+---@field  next_sibling	        fun(self: TSNode, ): TSNode?
+---@field  parent	              fun(self: TSNode, ): TSNode?
+---@field  prev_named_sibling	  fun(self: TSNode, ): TSNode?
+---@field  prev_sibling	        fun(self: TSNode, ): TSNode?
+---@field  range                fun(self: TSNode, ): { start_row: integer, start_column: integer, end_row: integer, end_column: integer }
+---@field  sexpr	              fun(self: TSNode, ): string
+---@field  start	              fun(self: TSNode, ): { row: integer, column: integer }
+---@field  symbol	              fun(self: TSNode, ): integer
+---@field  type	              fun(self: TSNode, ): string
