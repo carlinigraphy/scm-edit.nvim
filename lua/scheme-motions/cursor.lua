@@ -95,7 +95,7 @@ end
 ---@param  node    TSNode
 ---@return boolean
 -- 
--- Is the cursor behind the left edge of the node?
+-- Is the cursor ahead the right edge of the node?
 function Cursor:is_ahead(node)
    local node_row, node_col = node:end_()
    return (node_row   < self.row) or   -- Previous line.
