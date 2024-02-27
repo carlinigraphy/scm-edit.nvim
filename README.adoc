@@ -1,8 +1,27 @@
 = scheme-motions.nvim
 
-Manipulate TSNodes, rather than raw text motions.
+Motions that feel good (to me) for editing s-expressions.
 
-Scheme is almost uniquely poorly situated to strictly text-based editing.
-Something like `paredit` or `parinfer` provides a better editing experience, though both have their flaws.
+Lisps are uniquely poorly suited to the character & line-wise editing model Vim provides.
+Tree-sitter allows for a significantly better experience, operating on the nodes that represent the forms/expressions themselves.
 
-This aims to provide a more vim-first approach to manipulating s-expressions.
+
+== Status
+Just playin' around.
+
+I have no hope or aspirations that this will ever become more than a pet project.
+Learning how to "correctly" structure a Lua nvim plugin.
+
+Maybe playing around with https://fennel-lang.org/[Fennel] down the line.
+
+
+== Musings
+.To wrap, or not to wrap?
+Not yet sure if I want to re-wrap the `TSNode` and `TSTree` objects to add more comparisons and methods.
+May help to give a more global `:next()` w/ respect to the tree, rather than default `:next_sibling()`.
+
+
+== Inspiration, awe, theft, etc.
+. https://github.com/julienvincent/nvim-paredit
+. https://github.com/kovisoft/paredit
+. https://github.com/gpanders/nvim-parinfer
