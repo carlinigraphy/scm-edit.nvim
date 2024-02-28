@@ -34,11 +34,6 @@ function Cursor:get(window)
 end
 
 
-function Cursor:print()
-   print(self)
-end
-
-
 ---@param node    TSNode
 ---@param side    "start" | "end"
 ---@param window? integer
