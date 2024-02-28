@@ -20,6 +20,27 @@ Maybe playing around with https://fennel-lang.org/[Fennel] down the line.
 Not yet sure if I want to re-wrap the `TSNode` and `TSTree` objects to add more comparisons and methods.
 May help to give a more global `:next()` w/ respect to the tree, rather than default `:next_sibling()`.
 
+_Update:_ <br>
+
+So I found a way to do it, but it's pretty hacky.
+
+[source,lua]
+----
+local Node = {}
+function Node:new(TSNode)
+   return setmetatable({}, {
+      __index = function(_, key)
+         return function(...)
+            return TSNode[key](TSNode, ...)
+         end
+      end
+   })
+end
+----
+
+Dooonn't think that's on the radar for now.
+Feels likely to make troubleshooting, debugging, much more difficult.
+
 
 == Inspiration, awe, theft, etc.
 . https://github.com/julienvincent/nvim-paredit
