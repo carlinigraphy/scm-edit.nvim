@@ -8,8 +8,8 @@ local Cursor = require("scheme-motions.cursor")
 ---@return TSNode?
 --
 -- Depth-first search, returning in order:
---  1. First child (if found)
---  2. Next sibling (if found)
+--    1. First child (if found)
+--    2. Next sibling (if found)
 -- Recurse up the tree until hitting the document root.
 local function next_named(node)
    if node:named_child_count() > 0 then
@@ -25,18 +25,21 @@ local function next_named(node)
 end
 
 
+---@param node TSNode
+---#return TSNode?
+--
+-- Depth first backwards search, returning in order:
+--    1. Previous sibling's deepest leaf node
+--    2. Node's paent
 local function prev_named(node)
-   if node:prev_named_sibling() then
-      return prev_named(node:prev_named_sibling())
+   if not node:prev_named_sibling() then
+      return node:parent()
    end
 
-   if node:named_child_count() == 0 then
-      return node
+   node = node:prev_named_sibling()
+   while node:named_child_count() > 0 do
+      node = node:named_child(node:named_child_count() - 1) --[[@as TSNode]]
    end
-
-   -- Aaaaaah.
-   -- Can't figure out how the iteration/recursion works here. Feel like I'm
-   -- getting close, but it's not quite there.
 
    return node
 end
@@ -61,7 +64,7 @@ local function move_to(direction, predicate)
       error("Expecting non-nil TSNode.", 2)
    end
 
-   local MAX_RECR = 100
+   local MAX_RECR = 1000
    repeat
       node = fn(node) --[[@as TSNode]]
       MAX_RECR = MAX_RECR - 1
