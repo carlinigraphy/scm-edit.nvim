@@ -47,6 +47,9 @@ function Cursor:set(node, side, window)
       row, column = node:start()
    elseif side == "end" then
       row, column = node:end_()
+      column = column - 1
+      -- TODO: don't yet understand why end positions are setting the cusor
+      -- with a +1 offset. Still need to figure that out. For now, un-offset.
    else
       error("side must be one of ['start', 'end']", 2)
    end

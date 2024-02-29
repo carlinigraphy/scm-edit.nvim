@@ -26,12 +26,17 @@ end
 
 
 ---@param node TSNode
----#return TSNode?
+---@return TSNode?
 --
 -- Depth first backwards search, returning in order:
 --    1. Previous sibling's deepest leaf node
 --    2. Node's paent
 local function prev_named(node)
+   --[[ TODO:
+   This doesn't quiiite work yet. Being on the closing paren of a form is the
+   same as being on the start.
+   --]]
+
    if not node:prev_named_sibling() then
       return node:parent()
    end
@@ -45,13 +50,14 @@ local function prev_named(node)
 end
 
 
----@param direction "next" | "prev"
+---@param direction "next"  | "prev"
+---@param side      "start" | "end"
 ---@param predicate fun(node: TSNode, cursor: Cursor): boolean
 --
 -- Sets cursor location to the next TSNode matching a predicate. Repeaatedly
 -- calls `next_node()` or `prev_node()` until `predicate(node, cursor)` is
 -- true.
-local function move_to(direction, predicate)
+local function move_to(direction, side, predicate)
    local cursor = Cursor:get()
    local node   = ts.get_node_at_cursor()
 
@@ -77,14 +83,14 @@ local function move_to(direction, predicate)
    end
 
    if node then
-      cursor:set(node, "start")
+      cursor:set(node, side)
    end
 end
 
 
 --- Unvances cursor (skipping comments) to the start of the previous form.
 function M.prev_form_start()
-   move_to("prev", function(node, cursor)
+   move_to("prev", "start", function(node, cursor)
       return not node
          or  pred.is_form(node)
          and cursor:is_ahead(node, "start")
@@ -92,14 +98,40 @@ function M.prev_form_start()
 end
 
 
+function M.prev_element_start()
+   move_to("prev", "start", function(node, cursor)
+      return not node
+         or not pred.is_form(node)
+         and cursor:is_ahead(node, "start")
+   end)
+end
+
+
 --- Advances cursor (skipping comments) to the start of the next form.
 function M.next_form_start()
-   move_to("next", function(node, cursor)
+   move_to("next", "start", function(node, cursor)
       return not node
          or  pred.is_form(node)
          and cursor:is_behind(node, "start")
    end)
 end
 
+
+function M.next_element_start()
+   move_to("next", "start", function(node, cursor)
+      return not node
+         or not pred.is_form(node)
+         and cursor:is_behind(node, "start")
+   end)
+end
+
+
+function M.next_element_end()
+   move_to("next", "end", function(node, cursor)
+      return not node
+         or not pred.is_form(node)
+         and cursor:is_behind(node, "end")
+   end)
+end
 
 return M

@@ -1,4 +1,9 @@
 = scheme-motions.nvim
+:toc:                      preamble
+:toclevels:                3
+:source-highlighter:       pygments
+:pygments-style:           algol_nu
+:pygments-linenums-mode:   table
 
 Motions that feel good (to me) for editing s-expressions.
 
@@ -16,7 +21,7 @@ Maybe mess around with https://fennel-lang.org/[Fennel].
 
 
 == Musings
-.To wrap, or not to wrap?
+=== To wrap, or not to wrap
 Not yet sure if I want to re-wrap the `TSNode` and `TSTree` objects to add more comparisons and methods.
 May help to give a more global `:next()` w/ respect to the tree, rather than default `:next_sibling()`.
 
@@ -39,6 +44,46 @@ end
 
 Dooonn't think that's on the radar for now.
 Feels likely to make troubleshooting, debugging, much more difficult.
+
+=== Modularity
+Ideally each piece should be nearly independently usable
+(with exceptions for `Cursor`, or other core "classes").
+
+
+== Complete
+=== Motions
+.Completed
+. `next_form_start`
+. `prev_form_start`
+. `next_element_start`
+. `prev_element_start`
+. `next_element_end`
+
+=== Selecting
+NYI.
+
+.Wishlist
+. Select in form
+. Select around form
+. Select in definition
+. Select around definition
+
+=== Editing
+NYI.
+
+.Wishlist
+. Move element, form forwards/backwards/up
+. Wrap element, form, visual selection
+. Unwrap form
+. Slurp/barf
+
+=== Autopairs
+NYI.
+
+.Wishlist
+. Close all parens up to cursor
+. Deleting a paren deletes its match
+.. This may honestly be as easy as ``ma%x`ax``
 
 
 == Inspiration, awe, theft, etc.
