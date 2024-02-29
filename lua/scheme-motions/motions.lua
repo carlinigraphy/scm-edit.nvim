@@ -20,31 +20,83 @@ local function next_named(node)
       if node:next_named_sibling() then
          return node:next_named_sibling()
       end
-      ---@diagnostic disable-next-line: cast-local-type
       node = node:parent()
+   until not node:parent()
+end
+
+
+local function prev_named(node)
+   if node:prev_named_sibling() then
+      return prev_named(node:prev_named_sibling())
+   end
+
+   if node:named_child_count() == 0 then
+      return node
+   end
+
+   -- Aaaaaah.
+   -- Can't figure out how the iteration/recursion works here. Feel like I'm
+   -- getting close, but it's not quite there.
+
+   return node
+end
+
+
+---@param direction "next" | "prev"
+---@param predicate fun(node: TSNode, cursor: Cursor): boolean
+--
+-- Sets cursor location to the next TSNode matching a predicate. Repeaatedly
+-- calls `next_node()` or `prev_node()` until `predicate(node, cursor)` is
+-- true.
+local function move_to(direction, predicate)
+   local cursor = Cursor:get()
+   local node   = ts.get_node_at_cursor()
+
+   local fn
+   if direction == "prev" then
+      fn = prev_named
+   elseif direction == "next" then
+      fn = next_named
+   else
+      error("Expecting non-nil TSNode.", 2)
+   end
+
+   local MAX_RECR = 100
+   repeat
+      node = fn(node) --[[@as TSNode]]
+      MAX_RECR = MAX_RECR - 1
    until
-      ---@diagnostic disable-next-line: need-check-nil
-      not node:parent()
+      predicate(node, cursor) or
+      MAX_RECR < 0
+
+   if MAX_RECR < 0 then
+      error("Maximum recursion depth hit.")
+   end
+
+   if node then
+      cursor:set(node, "start")
+   end
+end
+
+
+--- Unvances cursor (skipping comments) to the start of the previous form.
+function M.prev_form_start()
+   move_to("prev", function(node, cursor)
+      return not node
+         or  pred.is_form(node)
+         and cursor:is_ahead(node, "start")
+   end)
 end
 
 
 --- Advances cursor (skipping comments) to the start of the next form.
 function M.next_form_start()
-  local cursor = Cursor:get()
-  local node   = ts.get_node_at_cursor()
-
-  repeat node = next_named(node) --[[@as TSNode]]
-  until  not node                   or
-         not pred.is_comment(node) and
-         pred.is_form(node)        and
-         cursor:is_behind(node)
-
-  if node then
-    cursor:set(node, "start")
-  end
+   move_to("next", function(node, cursor)
+      return not node
+         or  pred.is_form(node)
+         and cursor:is_behind(node, "start")
+   end)
 end
 
-
---function M.prev_form_start()
 
 return M

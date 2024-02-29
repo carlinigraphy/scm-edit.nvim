@@ -1,15 +1,10 @@
-local Cursor     = require("scheme-motions.cursor")
-local motions    = require("scheme-motions.motions")
-local predicates = require("scheme-motions.predicates")
+local motions = require("scheme-motions.motions")
 
 local M = {}
 
 function M.setup()
-   vim.keymap.set('n', 's', motions.next_form_start)
-   --vim.keymap.set('n', 's', function()
-   --   local c = Cursor.get()
-   --   print(c)
-   --end)
+   vim.keymap.set('n', 'W', motions.next_form_start)
+   vim.keymap.set('n', 'B', motions.prev_form_start)
 end
 
 return M

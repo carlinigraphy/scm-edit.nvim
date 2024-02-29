@@ -56,11 +56,20 @@ end
 
 
 ---@param  node    TSNode
+---@param  side    "start" | "end"
 ---@return boolean
 -- 
 -- Is the cursor behind the left edge of the node?
-function Cursor:is_behind(node)
-   local node_row, node_col = node:start()
+function Cursor:is_behind(node, side)
+   local node_row, node_col
+   if side == "start" then
+      node_row, node_col = node:start()
+   elseif side == "end" then
+      node_row, node_col = node:end_()
+   else
+      error("side must be one of ['start', 'end']", 2)
+   end
+
    return (node_row   > self.row) or   -- Later line.
           ((node_row == self.row) and  -- Same line...
            (node_col  > self.column))  -- ...later column.
@@ -68,11 +77,20 @@ end
 
 
 ---@param  node    TSNode
+---@param  side    "start" | "end"
 ---@return boolean
 -- 
 -- Is the cursor ahead the right edge of the node?
-function Cursor:is_ahead(node)
-   local node_row, node_col = node:end_()
+function Cursor:is_ahead(node, side)
+   local node_row, node_col
+   if side == "start" then
+      node_row, node_col = node:start()
+   elseif side == "end" then
+      node_row, node_col = node:end_()
+   else
+      error("side must be one of ['start', 'end']", 2)
+   end
+
    return (node_row   < self.row) or   -- Previous line.
           ((node_row == self.row) and  -- Same line...
            (node_col  < self.column))  -- ...previous column.
