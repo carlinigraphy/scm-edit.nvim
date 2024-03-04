@@ -3,6 +3,7 @@
 ---@field column integer
 local Cursor = {}
 
+
 ---@return string
 --
 -- Returns the user-facing string representation of a cursor object, setting
@@ -34,10 +35,9 @@ function Cursor:get(window)
 end
 
 
----@param node    TSNode
----@param side    "start" | "end"
----@param window? integer
-function Cursor:set(node, side, window)
+---@param node TSNode
+---@param side "start" | "end"
+function Cursor:set(node, side)
    if not node then
       error("expecting non-nil TSNode", 2)
    end
@@ -54,7 +54,16 @@ function Cursor:set(node, side, window)
       error("side must be one of ['start', 'end']", 2)
    end
 
-   return vim.api.nvim_win_set_cursor(window or 0, {row+1, column})
+   return vim.api.nvim_win_set_cursor(0, {row+1, column})
+end
+
+
+---@param opts { row:integer, column:integer }
+function Cursor:set_offset(opts)
+   vim.api.nvim_win_set_cursor(0, {
+      self.row    + (opts.row    or 0) + 1,
+      self.column + (opts.column or 0)
+   })
 end
 
 

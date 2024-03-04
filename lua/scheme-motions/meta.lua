@@ -14,6 +14,7 @@
 ---@field  child_count          fun(self: TSNode, ): integer
 ---@field  end_                 fun(self: TSNode, ): { row: integer, column: integer }
 ---@field  equal                fun(self: TSNode, node: TSNode): boolean
+---@field  has_error            fun(self: TSNode, ): boolean
 ---@field  id                   fun(self: TSNode, ): string
 ---@field  iter_children        fun(self: TSNode, ): TSNode
 ---@field  named                fun(self: TSNode, ): boolean

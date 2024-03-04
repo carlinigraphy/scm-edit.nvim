@@ -30,7 +30,7 @@ end
 --
 -- Depth first backwards search, returning in order:
 --    1. Previous sibling's deepest leaf node
---    2. Node's paent
+--    2. Node's parent
 local function prev_named(node)
    --[[ TODO:
    This doesn't quiiite work yet. Being on the closing paren of a form is the
@@ -133,5 +133,6 @@ function M.next_element_end()
          and cursor:is_behind(node, "end")
    end)
 end
+
 
 return M
