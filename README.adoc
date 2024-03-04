@@ -53,11 +53,11 @@ Ideally each piece should be nearly independently usable
 == Complete
 === Motions
 .Completed
-. `next_form_start`
-. `prev_form_start`
-. `next_element_start`
-. `prev_element_start`
-. `next_element_end`
+. `motions.next_form_start`
+. `motions.prev_form_start`
+. `motions.next_element_start`
+. `motions.prev_element_start`
+. `motions.next_element_end`
 
 === Selecting
 NYI.
@@ -78,12 +78,13 @@ NYI.
 . Slurp/barf
 
 === Autopairs
-NYI.
+.Completed
+. `pairs.close_one`
+. `pairs.close_all`
+. `pairs.toggle`
 
 .Wishlist
-. Close all parens up to cursor
 . Deleting a paren deletes its match
-.. This may honestly be as easy as ``ma%x`ax``
 
 
 == Inspiration, awe, theft, etc.
