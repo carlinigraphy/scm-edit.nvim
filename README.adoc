@@ -1,4 +1,4 @@
-= scheme-motions.nvim
+= scm-edit.nvim
 :toc:                      preamble
 :toclevels:                3
 :source-highlighter:       pygments

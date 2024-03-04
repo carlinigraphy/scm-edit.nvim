@@ -1,8 +1,8 @@
 local M = {}
 
 local ts = require("nvim-treesitter.ts_utils")
-local pred = require("scheme-motions.predicates")
-local Cursor = require("scheme-motions.cursor")
+local pred = require("scm-edit.predicates")
+local Cursor = require("scm-edit.cursor")
 
 ---@param node TSNode
 ---@return TSNode?

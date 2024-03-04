@@ -1,5 +1,5 @@
-local motions = require("scheme-motions.motions")
-local pairs = require("scheme-motions.pairs")
+local motions = require("scm-edit.motions")
+local pairs = require("scm-edit.pairs")
 
 local M = {}
 
