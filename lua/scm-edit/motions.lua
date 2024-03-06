@@ -107,17 +107,26 @@ function M.prev_element_start()
 end
 
 
---- Advances cursor (skipping comments) to the start of the next form.
-function M.next_form_start()
+---@param times? integer Defaults to `vim.v.count1`
+--
+-- Advances cursor (skipping comments) to the start of the next form.
+function M.next_form_start(times)
+   times = times or vim.v.count1
+   if times == 0 then
+      return
+   end
+
    move_to("next", "start", function(node, cursor)
       return not node
          or  pred.is_form(node)
          and cursor:is_behind(node, "start")
    end)
+
+   M.next_form_start(times - 1)
 end
 
 
-function M.next_element_start()
+function M.next_element_start(times)
    move_to("next", "start", function(node, cursor)
       return not node
          or not pred.is_form(node)
