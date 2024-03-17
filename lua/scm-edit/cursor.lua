@@ -12,7 +12,7 @@ local Cursor = {}
 -- While cursors are stored with a zero-index, this representation better
 -- reflects the output on the screen, and is more useful in debugging.
 -- Displays `_' if null row/column.
-function Cursor.__tostring(self)
+function Cursor:__tostring()
    local row    = self.row    and (self.row    + 1) or "_"
    local column = self.column and (self.column + 1) or "_"
    return "{" .. row .. ", " .. column .. "}"
@@ -47,9 +47,7 @@ function Cursor:set(node, side)
       row, column = node:start()
    elseif side == "end" then
       row, column = node:end_()
-      column = column - 1
-      -- TODO: don't yet understand why end positions are setting the cusor
-      -- with a +1 offset. Still need to figure that out. For now, un-offset.
+      column = column - 1 -- end column is non-inclusive
    else
       error("side must be one of ['start', 'end']", 2)
    end
@@ -78,6 +76,7 @@ function Cursor:is_behind(node, side)
       node_row, node_col = node:start()
    elseif side == "end" then
       node_row, node_col = node:end_()
+      node_col = node_col - 1 -- end column is non-inclusive
    else
       error("side must be one of ['start', 'end']", 2)
    end
@@ -99,6 +98,7 @@ function Cursor:is_ahead(node, side)
       node_row, node_col = node:start()
    elseif side == "end" then
       node_row, node_col = node:end_()
+      node_col = node_col - 1 -- end column is non-inclusive
    else
       error("side must be one of ['start', 'end']", 2)
    end

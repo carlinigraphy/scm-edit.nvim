@@ -49,6 +49,29 @@ Feels likely to make troubleshooting, debugging, much more difficult.
 Ideally each piece should be nearly independently usable
 (with exceptions for `Cursor`, or other core "classes").
 
+=== Contextual movements
+Repeated movements (or perhaps all "big" movements?) should not exceed "`contextual boundaries`".
+When in a comment, `4W` should not jump outside of the comment context into code.
+When in code, `{` should jump back to the prior top-level definition, not a prior comment paragraph.
+
+.Update 2024-03-17
+Thinking the above actually may be rather difficult to implement.
+As I think about it furthere, there are more context-dependent scenarios than I considered.
+Example:
+
+[source,scheme]
+----
+(element1 "this is a string" |element2)
+;;                  cursor --^
+;; When pressing `b', the consistent expectation would be to place the cursor
+;; within the string, at the start of the word "string". Need to consider the
+;; context of the *expected destination*.
+----
+
+For now, it may be easiest to not remap the default `b`, `w`, `e`, bindings, and instead use `sb`, `sw`, and `se`.
+When the core of the movement is sound, adding in contextual mappings becomes easier.
+Currently there are unmitigated edge cases (prev element within form, prev element at form end, etc.) that make extensibility difficult.
+
 
 == Complete
 === Motions
