@@ -1,5 +1,6 @@
-local pred = require("scm-edit.predicates")
-local ts   = require("nvim-treesitter.ts_utils")
+local Cursor = require("scm-edit.cursor")
+local pred   = require("scm-edit.predicates")
+local ts     = require("nvim-treesitter.ts_utils")
 
 --[[ THINKIES
 
@@ -29,7 +30,7 @@ end
 
 ---@return TSNode, Context
 function Context:at_cursor()
-   local node = ts.get_node_at_cursor()
+   local node = Cursor.get_node_at_cursor()
    return node, context_map(node)
 end
 

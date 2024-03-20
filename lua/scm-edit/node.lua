@@ -11,32 +11,37 @@ Can add my version of the "prev_node" function, returning the previous
 
 --]]
 
-local ts = require("nvim-treesitter.ts_utils")
-
 ---@class Node
-local Node = {}
+local Node = {
+   get  = vim.treesitter.get_node,
+   text = vim.treesitter.get_node_text,
+}
 
-function Node:text()
-   return ts.get_node_text(self)
-end
 
-
----@param TSNode TSNode
+---@param node TSNode
 ---@return Node
-function Node:new(TSNode)
-   return setmetatable({}, {
+function Node:new(node)
+   -- Pretty safe to assume *one* of these will be necessary every time.
+   local start_row, start_column, end_row, end_column = node:range()
+
+   return setmetatable({
+      start_row    = start_row,
+      start_column = start_column,
+      end_row      = end_row,
+      end_column   = end_column - 1,  -- non-inclusive upper bound offset.
+   }, {
       __index = function(_, key)
          local rv = self[key]
          if rv then return rv end
 
          -- Don't know if this is necessary, but should give better error
          -- reporting.
-         if not TSNode[key] then
+         if not node[key] then
             error("Key '"..key.."' not found.", 2)
          end
 
          return function(...)
-            return TSNode[key](TSNode, ...)
+            return node[key](node, ...)
          end
       end
    })

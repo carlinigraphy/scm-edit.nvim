@@ -29,24 +29,19 @@ end
 
 
 function M.close_one()
-   local cursor = Cursor:get()
-   local node   = ts.get_node_at_cursor()
-
+   local cursor, node = Cursor:get()
    local parens = collect_parens(node)
    vim.api.nvim_buf_set_text(0,
       cursor.row, cursor.column, -- start row/col
       cursor.row, cursor.column, -- end row/col
       { string.sub(parens, 1, 1) }
    )
-
    cursor:set_offset({ column = 1 })
 end
 
 
 function M.close_all()
-   local cursor = Cursor:get()
-   local node = ts.get_node_at_cursor()
-
+   local cursor, node = Cursor:get()
    local parens = collect_parens(node)
    vim.api.nvim_buf_set_text(0,
       cursor.row, cursor.column, -- start row/col
@@ -58,7 +53,7 @@ end
 
 
 function M.toggle()
-   local node = ts.get_node_at_cursor()
+   local node = Cursor.get_node()
    local matching = {
       ["("] = "[", [")"] = "]",
       ["["] = "(", ["]"] = ")",
