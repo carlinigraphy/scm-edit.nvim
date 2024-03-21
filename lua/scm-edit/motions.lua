@@ -31,7 +31,8 @@ local function next_named(node)
    until not node:parent()
 end
 
-
+-- TODO;
+--
 ---@param node TSNode
 ---@return TSNode?
 --
@@ -252,15 +253,28 @@ function M.prev_element_end()
 end
 
 
---[[
-function M.next_element_start()
-   return _next_element("start")
-end
+--[[ THINKIES;
+Aight, what's happening is this: a `program' has no parents or siblings. The
+last child is returned (the absolute final form of the program), and it walks
+backwards from there.
 
+(As an optimization, feel like we can do some sort of bracketing search, but
+that's way down the line.)
 
-function M.next_element_end()
-   return _next_element("end")
-end
+Some confusion:
+   - Why is the `initial' node not used? I presume it's not finding the intended
+     target, and should fall back
+   - Why is it not stepping back from the end to find the current node...?
+
+Things to look at:
+   - Go back to rev. 19, add some profiling to the `move_to' function. Extra
+     counter to see how many jumps it makes before finding the target node.
+
+     My bet is that the previous version of `move_to' is going to take a bunch
+     of jumps.
+
+     Yeah lol it's doing about a billion jumps. For a 400 line file it's
+     jumping 750 times. Need to use a binary search.
 --]]
 
 return M
