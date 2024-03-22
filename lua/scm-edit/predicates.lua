@@ -16,8 +16,9 @@ end
 function M.is_form(node)
    assert(node)
    return
-      node:type() == "list"   or
-      node:type() == "vector" or
+      node:type() == "program"   or
+      node:type() == "list"      or
+      node:type() == "vector"    or
       node:type() == "byte_vector"
 end
 

@@ -190,26 +190,6 @@ local function abs_form_start(node)
    end
 end
 
------------------------------------------------------------------------------}}}
-
----@param node TSNode
----@return TSNode
-local function prev_element_recr(initial, node)
-   local prev = prev_named(node)
-   local cond = prev
-      and not (prev:type() == "program")
-      and not pred.is_form(prev)
-      and not pred.is_comment(prev)
-
-   if cond then ---@cast prev -?
-      return prev
-   elseif prev then
-      return prev_element_recr(initial, prev)
-   else
-      return initial
-   end
-end
-
 
 ---@param node TSNode
 ---@param cursor Cursor
@@ -231,11 +211,44 @@ local function prev_element_from_end(node, cursor)
 end
 
 
+---@param form   TSNode
+---@param cursor Cursor
+---@param min    integer
+---@param max    integer
+---@param ib     integer   "index before", closest index found before Cursor
+---@param ia     integer   "index after", closest index found after Cursor
+---
+---@return integer, integer
+local function _bracket(form, cursor, min, max, ib, ia)
+   if max - min == 1 then
+      return ib, ia
+   end
+
+   ---@type integer
+   local pivot = min + math.floor((max - min) / 2)
+   local test  = form:named_child(pivot) --[[ @cast test -nil ]]
+
+   if cursor:is_behind(test, "start") then
+      return _bracket(form, cursor, min, pivot, ib, pivot)
+   else
+      return _bracket(form, cursor, pivot, max, pivot, ia)
+   end
+end
+
+
+local function bracket(form, cursor)
+   local max = form:named_child_count()
+   return _bracket(form, cursor, 0, max, 0, max)
+end
+
+-----------------------------------------------------------------------------}}}
+
+
 ---@param side "start" | "end"
 local function _prev_element(side)
    local cursor, node = Cursor:get()
 
-   if pred.is_form(node) or (node:type() == "program") then
+   if pred.is_form(node) then
       node = abs_form_end(node)
    end
 
@@ -252,29 +265,5 @@ function M.prev_element_end()
    return _prev_element("end")
 end
 
-
---[[ THINKIES;
-Aight, what's happening is this: a `program' has no parents or siblings. The
-last child is returned (the absolute final form of the program), and it walks
-backwards from there.
-
-(As an optimization, feel like we can do some sort of bracketing search, but
-that's way down the line.)
-
-Some confusion:
-   - Why is the `initial' node not used? I presume it's not finding the intended
-     target, and should fall back
-   - Why is it not stepping back from the end to find the current node...?
-
-Things to look at:
-   - Go back to rev. 19, add some profiling to the `move_to' function. Extra
-     counter to see how many jumps it makes before finding the target node.
-
-     My bet is that the previous version of `move_to' is going to take a bunch
-     of jumps.
-
-     Yeah lol it's doing about a billion jumps. For a 400 line file it's
-     jumping 750 times. Need to use a binary search.
---]]
 
 return M
