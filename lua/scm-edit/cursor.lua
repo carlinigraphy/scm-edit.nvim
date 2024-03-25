@@ -6,20 +6,6 @@ local Cursor = {
    is_in_node_range = vim.treesitter.is_in_node_range,
 }
 
----@return string
---
--- Returns the user-facing string representation of a cursor object, setting
--- one-based indices.
---
--- While cursors are stored with a zero-index, this representation better
--- reflects the output on the screen, and is more useful in debugging.
--- Displays `_' if null row/column.
-function Cursor:__tostring()
-   local row    = self.row    and (self.row    + 1) or "_"
-   local column = self.column and (self.column + 1) or "_"
-   return "{" .. row .. ", " .. column .. "}"
-end
-
 
 ---@return Cursor, TSNode
 --
@@ -31,7 +17,15 @@ function Cursor:get()
       row    = cursor[1] - 1,
       column = cursor[2]
    }, {
-      __index = self
+      __index = self,
+
+      -- TODO;
+      -- I'd like to not define the metamethods here. I thought returning an
+      -- `__index=self` above would be sufficient, but that doesn't seem to
+      -- account for metamethods? Gotta play with this more later.
+      __tostring = function(this)
+         return "<" .. (this.row+1) .. "," .. (this.column+1) .. ">"
+      end
    }), Cursor.get_node()
 end
 
@@ -82,9 +76,9 @@ function Cursor:is_behind(node, side)
       error("side must be one of ['start', 'end']", 2)
    end
 
-   return (node_row   > self.row) or   -- Later line.
-          ((node_row == self.row) and  -- Same line...
-           (node_col >= self.column))  -- ...later column.
+   return (self.row < node_row) or
+          ((self.row == node_row) and
+           (self.column < node_col))
 end
 
 
@@ -94,6 +88,8 @@ end
 -- 
 -- Is the cursor ahead the right edge of the node?
 function Cursor:is_ahead(node, side)
+   assert(node)
+
    local node_row, node_col
    if side == "start" then
       node_row, node_col = node:start()
@@ -110,32 +106,17 @@ function Cursor:is_ahead(node, side)
 end
 
 
-local function contains(cursor, node)
-   local start_row, start_column, end_row, end_column = node:range()
-   end_column = end_column - 1
-
-end
-
-
 ---@param node TSNode
 ---@return boolean
 --
 -- Cursor is within a node, but after its start position. Example:
 --
 -- ```scheme
--- ;; These are valid positions:
---    (define foo "bar")
--- ;;   ^---^  ^^  ^--^
+--   (define foo "bar") ;< these are `true`:
+-- ;;  ^---^  ^^  ^--^
 --
--- ;; These are not.
---   (define foo "bar")
+--   (define foo "bar") ;< these are not.
 -- ;; ^      ^   ^
--- ```
---
--- I didn't know of `vim.treesitter.is_in_node_range()`. Before I was working
--- on this...
---
--- ```lua
 -- ```
 function Cursor:after_start(node)
    local start_row, start_column, end_row, end_column = node:range()
@@ -167,12 +148,10 @@ end
 --
 -- Cursor is within a node, but before its end position. Example:
 -- ```scheme
--- ;; These are valid positions:
---    (define foo "bar")
--- ;;  ^---^  ^^  ^--^
+--   (define foo "bar") ;< these are `true`
+-- ;; ^---^  ^^  ^--^
 --
--- ;; These are not.
---   (define foo "bar")
+--   (define foo "bar") ;< these are not.
 -- ;;      ^   ^     ^
 -- ```
 function Cursor:before_end(node)

@@ -5,9 +5,10 @@ local M = {}
 ---@return boolean
 function M.is_comment(node)
    assert(node)
+   local type = node:type()
    return
-      node:type() == "comment" or
-      node:type() == "block_comment"
+      type == "comment" or
+      type == "block_comment"
 end
 
 
@@ -15,11 +16,23 @@ end
 ---@return boolean
 function M.is_form(node)
    assert(node)
+   local type = node:type()
    return
-      node:type() == "program"   or
-      node:type() == "list"      or
-      node:type() == "vector"    or
-      node:type() == "byte_vector"
+      type == "program"   or
+      type == "list"      or
+      type == "vector"    or
+      type == "byte_vector"
+end
+
+
+---@param node TSNode
+---@return boolean
+function M.is_string(node)
+   assert(node)
+   local type = node:type()
+   return
+      type == "string" or
+      type == "escape_sequence"
 end
 
 

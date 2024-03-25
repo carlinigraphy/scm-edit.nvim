@@ -1,12 +1,9 @@
--- vim: foldmethod=marker
+--------------------------------------------------------------------------------
+-- internals
+--------------------------------------------------------------------------------
 
-local M = {}
-
-local pred = require("scm-edit.predicates")
-local Cursor = require("scm-edit.cursor")
-local Context = require("scm-edit.context")
-
-local MAX_RECR = 1000
+local pred    = require("scm-edit.predicates")
+local Cursor  = require("scm-edit.cursor")
 
 ---@param node TSNode
 ---@return TSNode?
@@ -25,14 +22,13 @@ local function next_named(node)
 
    repeat
       if node:next_named_sibling() then
-         return node:next_named_sibling() --[[@as TSNode]]
+         return node:next_named_sibling()
       end
-      node = node:parent() --[[@as TSNode]]
+      node = node:parent() --[[ @as TSNode ]]
    until not node:parent()
 end
 
--- TODO;
---
+
 ---@param node TSNode
 ---@return TSNode?
 --
@@ -46,182 +42,59 @@ local function prev_named(node)
       return node:parent()
    end
 
-   node = node:prev_named_sibling()
-   while node:named_child_count() > 0 do
-      node = node:named_child(node:named_child_count() - 1)
+   local prev = node:prev_named_sibling()
+   ---@cast prev -nil
+
+   -- `nil check` implicitly covered by the conditional.
+   ---@diagnostic disable-next-line: need-check-nil
+   while prev:named_child_count() > 0 do
+      prev = prev:named_child(prev:named_child_count() - 1)
    end
 
-   return node
+   return prev
 end
 
 
----@param start_node TSNode
----@param direction  "next"  | "prev"
----@param side       "start" | "end"
----@param predicate  fun(node: TSNode, cursor: Cursor): boolean
+-- TODO;
+-- Can likely merge with `next_named`.
 --
+---@param node TSNode
+---@return TSNode?
+--
+-- Utility function to return the next node, without recursing into child nodes
+-- as in `next_named`.
+local function next_named_up(node)
+   local parent = node:parent()
+   local next = node:next_named_sibling()
+
+   if next then
+      return next
+   elseif parent then
+      return next_named_up(parent)
+   end
+end
+
+
+---@param form    TSNode
+---@param cursor  Cursor
+---@param min     integer
+---@param max     integer
+---@param closest integer  Index of TSNode after Cursor
 ---@return TSNode
 --
--- Sets cursor location to the next TSNode matching a predicate. Repeaatedly
--- calls `next_node()` or `prev_node()` until `predicate(node, cursor)` is
--- true.
-local function move_to(start_node, direction, side, predicate)
-   local cursor = Cursor:get()
-
-   local fn
-   if direction == "prev" then
-      fn = prev_named
-   elseif direction == "next" then
-      fn = next_named
-   else
-      error("Expecting non-nil TSNode.", 2)
-   end
-
-   local recr = MAX_RECR
-   local target_node = start_node
-
-   repeat
-      target_node = fn(target_node) --[[@as TSNode]]
-      recr = recr - 1
-   until
-      predicate(target_node, cursor) or
-      recr < 0
-
-   if recr < 0 then
-      error("Maximum recursion depth hit.")
-   end
-
-   if target_node then
-      cursor:set(target_node, side)
-   end
-
-   return target_node
-end
-
-
---- Unvances cursor (skipping comments) to the start of the previous form.
-function M.prev_form_start()
-   local start_node, context = Context:at_cursor()
-
-   if context == Context.COMMENT then
-      return vim.cmd('normal! B')
-   else
-      move_to(start_node, "prev", "start", function(node, cursor)
-         return not node
-            or  pred.is_form(node)
-            and cursor:is_ahead(node, "start")
-      end)
-   end
-end
-
-
--- Advances cursor (skipping comments) to the start of the next form.
-function M.next_form_start()
-   local start_node, context = Context:at_cursor()
-   vim.cmd[[ normal! m' ]] -- effectively pushes loc to jumplist
-
-   if context == Context.COMMENT then
-      return vim.cmd('normal! W')
-   else
-      move_to(start_node, "next", "start", function(node, cursor)
-         return not node
-            or pred.is_form(node)
-            and cursor:is_behind(node, "start")
-      end)
-   end
-end
-
-
-function M.next_element_start()
-   local start_node, context = Context:at_cursor()
-
-   if context == Context.COMMENT then
-      return vim.cmd('normal! w')
-   else
-      move_to(start_node, "next", "start", function(node, cursor)
-         return not node
-            or not pred.is_form(node)
-            and cursor:is_behind(node, "start")
-      end)
-   end
-end
-
-
-function M.next_element_end()
-   local start_node, context = Context:at_cursor()
-
-   if context == Context.COMMENT then
-      return vim.cmd('normal! e')
-   else
-      move_to(start_node, "next", "end", function(node, cursor)
-         return not node
-            or not pred.is_form(node)
-            and cursor:is_behind(node, "end")
-      end)
-   end
-end
-
-
--- [GOOD] -------------------------------------------------------------------{{{
-
----@param node TSNode
----@return TSNode
-local function abs_form_end(node)
-   local num_children = node:named_child_count()
-   local last_child   = node:named_child(num_children - 1)
-
-   if pred.is_form(node) and last_child then
-      ---@cast last_child -nil
-      return abs_form_end(last_child)
-   else
-      return node
-   end
-end
-
-
----@param node TSNode
----@return TSNode
-local function abs_form_start(node)
-   local first_child = node:named_child(0)
-   if first_child then
-      return first_child
-   else
-      return node
-   end
-end
-
-
----@param node TSNode
----@param cursor Cursor
----@return TSNode
-local function prev_element_from_end(node, cursor)
-   local prev = prev_named(node)
-   local cond = not cursor:is_behind(node, "start")
-      and not pred.is_comment(node)
-      and not pred.is_form(node)
-      and not (node:type() == "program")
-
-   if cond then
-      return node
-   elseif prev then
-      return prev_element_from_end(prev, cursor)
-   else
-      return node
-   end
-end
-
-
----@param form   TSNode
----@param cursor Cursor
----@param min    integer
----@param max    integer
----@param ib     integer   "index before", closest index found before Cursor
----@param ia     integer   "index after", closest index found after Cursor
----
----@return integer, integer
-local function _bracket(form, cursor, min, max, ib, ia)
+-- Regardless of subsequent jump direction, only returns the index of the node
+-- *after* the cursor.
+--
+-- ## Jumping backwards
+-- Starting one node ahead reduces the risk of overshooting the target node, and
+-- adds very few additional jumps. Easier to reason about; makes it worth it.
+--
+-- ## Jumping forwards
+-- Starting on the subsequent node obviously makes sense. Either doesn't
+-- require a jump at all, or very few to reach the target.
+local function _bracket(form, cursor, min, max, closest)
    if max - min == 1 then
-      return ib, ia
+      return form:named_child(closest) --[[ @as TSNode ]]
    end
 
    ---@type integer
@@ -229,40 +102,209 @@ local function _bracket(form, cursor, min, max, ib, ia)
    local test  = form:named_child(pivot) --[[ @cast test -nil ]]
 
    if cursor:is_behind(test, "start") then
-      return _bracket(form, cursor, min, pivot, ib, pivot)
+      return _bracket(form, cursor, min, pivot, pivot)
    else
-      return _bracket(form, cursor, pivot, max, pivot, ia)
+      return _bracket(form, cursor, pivot, max, closest)
    end
 end
 
 
+---@param form   TSNode
+---@param cursor Cursor
+---@return TSNode?
 local function bracket(form, cursor)
-   local max = form:named_child_count()
-   return _bracket(form, cursor, 0, max, 0, max)
+   assert(pred.is_form(form))
+
+   local max   = form:named_child_count() - 1
+   local first = form:named_child(0)
+   local last  = form:named_child(max)
+
+   ---@cast last -nil
+   -- Covered by initial check. If there's a first child, there' also a last
+   -- child. Not sure if there's a better way of annotating this below.
+
+   -- Edge case #1;  empty list, nothing to seek for
+   if not first then
+      return next_named_up(form)
+
+   -- Edge case #2;  cursor past the last element
+   -- (most often on the closing paren)
+   elseif cursor:is_ahead(last, "end") then
+      return next_named_up(form)
+
+   -- Edge case #3;  cursor before the first element
+   -- (most often on the opening paren)
+   elseif cursor:is_behind(first, "start") then
+      return first
+
+   -- Normal case;  cursor on whitespace within a form
+   else
+      return _bracket(form, cursor, 0, max, max)
+   end
 end
 
------------------------------------------------------------------------------}}}
+
+---@param node TSNode?
+---@param cursor Cursor
+---@param step_fn fun(node: TSNode): TSNode?
+---@param predicate fun(node: TSNode, cursor: Cursor): boolean
+---@return TSNode?
+local function seek_until(node, cursor, step_fn, predicate)
+   if not node then
+      return
+   elseif predicate(node, cursor) then
+      return node
+   else
+      return seek_until(step_fn(node), cursor, step_fn, predicate)
+   end
+end
 
 
+-- TODO; this can probably be rolled into `prev_element`.
+--
 ---@param side "start" | "end"
-local function _prev_element(side)
+local function prev_element(side)
    local cursor, node = Cursor:get()
 
+   ---@type TSNode?
+   local prev = node
+
    if pred.is_form(node) then
-      node = abs_form_end(node)
+      prev = bracket(node, cursor)
    end
 
-   return cursor:set(prev_element_from_end(node, cursor), side)
+   prev = seek_until(prev, cursor, prev_named, function(n, c)
+      return n
+         and not pred.is_form(n)
+         and not pred.is_comment(n)
+         and c:is_ahead(n, side)
+   end)
+
+   if prev then
+      cursor:set(prev, side)
+   end
 end
+
+
+-- TODO; this can probably be rolled into `prev_element`.
+--
+---@param side "start" | "end"
+local function next_element(side)
+   local cursor, node = Cursor:get()
+
+   ---@type TSNode?
+   local next = node
+
+   if pred.is_form(node) then
+      next = bracket(node, cursor)
+   end
+
+   next = seek_until(next, cursor, next_named, function(n, c)
+      return n
+         and not pred.is_form(n)
+         and not pred.is_comment(n)
+         and c:is_behind(n, side)
+   end)
+
+   if next then
+      cursor:set(next, side)
+   end
+end
+
+
+local function prev_form(side)
+   local cursor, node = Cursor:get()
+
+   ---@type TSNode?
+   local prev = node
+
+   if pred.is_form(node) then
+      prev = bracket(node, cursor)
+   end
+
+   prev = seek_until(prev, cursor, prev_named, function(n, c)
+      return n
+         and pred.is_form(n)
+         and c:is_ahead(n, side)
+   end)
+
+   if prev then
+      cursor:set(prev, side)
+   end
+end
+
+
+local function next_form(side)
+   local cursor, node = Cursor:get()
+
+   ---@type TSNode?
+   local next = node
+
+   if pred.is_form(node) then
+      next = bracket(node, cursor)
+   end
+
+   next = seek_until(next, cursor, next_named, function(n, c)
+      return n
+         and pred.is_form(n)
+         and c:is_behind(n, side)
+   end)
+
+   if next then
+      cursor:set(next, side)
+   end
+end
+
+
+---@param count integer
+---@param fn fun(any)
+---@vararg any
+local function with_count(count, fn, ...)
+   repeat fn(...)
+      print(count)
+      count = count - 1
+   until
+      count == 0
+end
+
+
+--------------------------------------------------------------------------------
+-- externals
+--------------------------------------------------------------------------------
+local M = {}
 
 
 function M.prev_element_start()
-   return _prev_element("start")
+   with_count(vim.v.count1, prev_element, "start")
 end
 
 
 function M.prev_element_end()
-   return _prev_element("end")
+   with_count(vim.v.count1, prev_element, "end")
+end
+
+
+function M.prev_form_start()
+   local count = vim.v.count1
+   vim.cmd[[ normal! m' ]]
+   with_count(count, prev_form, "start")
+end
+
+
+function M.next_element_start()
+   with_count(vim.v.count1, next_element, "start")
+end
+
+
+function M.next_element_end()
+   with_count(vim.v.count1, next_element, "end")
+end
+
+
+function M.next_form_start()
+   local count = vim.v.count1
+   vim.cmd[[ normal! m' ]]
+   with_count(count, next_form, "start")
 end
 
 
