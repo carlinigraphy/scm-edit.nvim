@@ -1,9 +1,8 @@
 --------------------------------------------------------------------------------
 -- internals
 --------------------------------------------------------------------------------
-
-local pred    = require("scm-edit.predicates")
-local Cursor  = require("scm-edit.cursor")
+local pred   = require("scm-edit.predicates")
+local Cursor = require("scm-edit.cursor")
 
 ---@param node TSNode
 ---@return TSNode?
@@ -148,6 +147,7 @@ end
 ---@param cursor Cursor
 ---@param step_fn fun(node: TSNode): TSNode?
 ---@param predicate fun(node: TSNode, cursor: Cursor): boolean
+--
 ---@return TSNode?
 local function seek_until(node, cursor, step_fn, predicate)
    if not node then
@@ -160,108 +160,42 @@ local function seek_until(node, cursor, step_fn, predicate)
 end
 
 
--- TODO; this can probably be rolled into `prev_element`.
---
+---@param direction "prev" | "next"
 ---@param side "start" | "end"
-local function prev_element(side)
-   local cursor, node = Cursor:get()
-
-   ---@type TSNode?
-   local prev = node
-
-   if pred.is_form(node) then
-      prev = bracket(node, cursor)
-   end
-
-   prev = seek_until(prev, cursor, prev_named, function(n, c)
-      return n
-         and not pred.is_form(n)
-         and not pred.is_comment(n)
-         and c:is_ahead(n, side)
-   end)
-
-   if prev then
-      cursor:set(prev, side)
-   end
-end
-
-
--- TODO; this can probably be rolled into `prev_element`.
+---@param predicate fun(node: TSNode, cursor: Cursor): boolean
 --
----@param side "start" | "end"
-local function next_element(side)
+---@return nil
+local function jump_to(direction, side, predicate)
    local cursor, node = Cursor:get()
 
    ---@type TSNode?
-   local next = node
+   local target = node
 
    if pred.is_form(node) then
-      next = bracket(node, cursor)
+      target = bracket(node, cursor)
    end
 
-   next = seek_until(next, cursor, next_named, function(n, c)
-      return n
-         and not pred.is_form(n)
-         and not pred.is_comment(n)
-         and c:is_behind(n, side)
-   end)
-
-   if next then
-      cursor:set(next, side)
-   end
-end
-
-
-local function prev_form(side)
-   local cursor, node = Cursor:get()
-
-   ---@type TSNode?
-   local prev = node
-
-   if pred.is_form(node) then
-      prev = bracket(node, cursor)
+   local step_fn
+   if direction == "prev" then
+      step_fn = prev_named
+   elseif direction == "next" then
+      step_fn = next_named
+   else
+      error("direction must be one of ['prev', 'next']", 2)
    end
 
-   prev = seek_until(prev, cursor, prev_named, function(n, c)
-      return n
-         and pred.is_form(n)
-         and c:is_ahead(n, side)
-   end)
+   target = seek_until(target, cursor, step_fn, predicate)
 
-   if prev then
-      cursor:set(prev, side)
-   end
-end
-
-
-local function next_form(side)
-   local cursor, node = Cursor:get()
-
-   ---@type TSNode?
-   local next = node
-
-   if pred.is_form(node) then
-      next = bracket(node, cursor)
-   end
-
-   next = seek_until(next, cursor, next_named, function(n, c)
-      return n
-         and pred.is_form(n)
-         and c:is_behind(n, side)
-   end)
-
-   if next then
-      cursor:set(next, side)
+   if target then
+      cursor:set(target, side)
    end
 end
 
 
 ---@param count integer
----@param fn fun(any)
----@vararg any
-local function with_count(count, fn, ...)
-   repeat fn(...)
-      print(count)
+---@param fn fun()
+local function with_count(count, fn)
+   repeat fn()
       count = count - 1
    until
       count == 0
@@ -275,36 +209,78 @@ local M = {}
 
 
 function M.prev_element_start()
-   with_count(vim.v.count1, prev_element, "start")
+   with_count(vim.v.count1, function()
+      jump_to("prev", "start", function(node, cursor)
+         return node
+            and not pred.is_form(node)
+            and not pred.is_comment(node)
+            and cursor:is_ahead(node, "start")
+      end)
+   end)
 end
 
 
 function M.prev_element_end()
-   with_count(vim.v.count1, prev_element, "end")
+   with_count(vim.v.count1, function()
+      jump_to("prev", "end", function(node, cursor)
+         return node
+            and not pred.is_form(node)
+            and not pred.is_comment(node)
+            and cursor:is_ahead(node, "end")
+      end)
+   end)
 end
 
 
 function M.prev_form_start()
    local count = vim.v.count1
-   vim.cmd[[ normal! m' ]]
-   with_count(count, prev_form, "start")
+   vim.cmd[[normal! m']]
+
+   with_count(count, function()
+      jump_to("prev", "start", function(node, cursor)
+         return node
+            and pred.is_form(node)
+            and cursor:is_ahead(node, "start")
+      end)
+   end)
 end
 
 
 function M.next_element_start()
-   with_count(vim.v.count1, next_element, "start")
+   with_count(vim.v.count1, function()
+      jump_to("next", "start", function(node, cursor)
+         return node
+            and not pred.is_form(node)
+            and not pred.is_comment(node)
+            and cursor:is_behind(node, "start")
+      end)
+   end)
 end
 
 
 function M.next_element_end()
-   with_count(vim.v.count1, next_element, "end")
+   with_count(vim.v.count1, function()
+      jump_to("next", "end", function(node, cursor)
+         return node
+            and not pred.is_form(node)
+            and not pred.is_comment(node)
+            and cursor:is_behind(node, "end")
+      end)
+   end)
 end
 
 
 function M.next_form_start()
    local count = vim.v.count1
-   vim.cmd[[ normal! m' ]]
-   with_count(count, next_form, "start")
+   vim.cmd[[normal! m']]
+
+   with_count(count, function()
+      jump_to("next", "start", function(node, cursor)
+         return node
+            and pred.is_form(node)
+            and cursor:is_behind(node, "start")
+      end)
+   end)
 end
 
 

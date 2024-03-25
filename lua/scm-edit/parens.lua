@@ -1,10 +1,8 @@
+--------------------------------------------------------------------------------
+-- internals
+--------------------------------------------------------------------------------
 local Cursor = require("scm-edit.cursor")
-local ts = require("nvim-treesitter.ts_utils")
-
 local get_node_text = vim.treesitter.get_node_text
-
-local M = {}
-
 
 ---@param node  TSNode
 ---@return string
@@ -28,6 +26,12 @@ local function collect_parens(node)
 end
 
 
+--------------------------------------------------------------------------------
+-- externals
+--------------------------------------------------------------------------------
+local M = {}
+
+
 function M.close_one()
    local cursor, node = Cursor:get()
    local parens = collect_parens(node)
@@ -46,7 +50,7 @@ function M.close_all()
    vim.api.nvim_buf_set_text(0,
       cursor.row, cursor.column, -- start row/col
       cursor.row, cursor.column, -- end row/col
-      { parens, "" }
+      { parens, "" } -- add empty line after
    )
    cursor:set_offset({ row = 1 })
 end

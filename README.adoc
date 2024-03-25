@@ -31,15 +31,27 @@ So I found a way to do it, but it's pretty hacky.
 [source,lua]
 ----
 local Node = {}
-function Node:new(TSNode)
-   return setmetatable({}, {
+
+function Node:new(node)
+   -- Pretty safe to assume *one* of these will be necessary every time.
+   local start_row, start_column, end_row, end_column = node:range()
+
+   return setmetatable({
+      _node        = node,
+      start_row    = start_row,
+      start_column = start_column,
+      end_row      = end_row,
+      end_column   = end_column - 1,  -- non-inclusive upper bound offset.
+   }, {
       __index = function(_, key)
-         return function(...)
-            return TSNode[key](TSNode, ...)
+         return self[key] or function(...)
+            return node[key](node, ...)
          end
       end
    })
 end
+
+return Node
 ----
 
 Dooonn't think that's on the radar for now.

@@ -2,9 +2,15 @@
 ---@field row    integer
 ---@field column integer
 local Cursor = {
-   get_node = vim.treesitter.get_node,
+   get_node         = vim.treesitter.get_node,
    is_in_node_range = vim.treesitter.is_in_node_range,
 }
+
+
+Cursor.__index = Cursor
+function Cursor:__tostring()
+   return "[Cursor; " .. (self.row+1) .. "," .. (self.column+1) .. "]"
+end
 
 
 ---@return Cursor, TSNode
@@ -16,17 +22,7 @@ function Cursor:get()
    return setmetatable({
       row    = cursor[1] - 1,
       column = cursor[2]
-   }, {
-      __index = self,
-
-      -- TODO;
-      -- I'd like to not define the metamethods here. I thought returning an
-      -- `__index=self` above would be sufficient, but that doesn't seem to
-      -- account for metamethods? Gotta play with this more later.
-      __tostring = function(this)
-         return "<" .. (this.row+1) .. "," .. (this.column+1) .. ">"
-      end
-   }), Cursor.get_node()
+   }, Cursor), Cursor.get_node()
 end
 
 
@@ -86,7 +82,7 @@ end
 ---@param  side    "start" | "end"
 ---@return boolean
 -- 
--- Is the cursor ahead the right edge of the node?
+-- Is the cursor ahead of the right edge of the node?
 function Cursor:is_ahead(node, side)
    assert(node)
 
@@ -100,9 +96,9 @@ function Cursor:is_ahead(node, side)
       error("side must be one of ['start', 'end']", 2)
    end
 
-   return (node_row   < self.row) or   -- Previous line.
-          ((node_row == self.row) and  -- Same line...
-           (node_col  < self.column))  -- ...previous column.
+   return (self.row > node_row) or
+          ((self.row == node_row) and
+           (self.column > node_col))
 end
 
 
@@ -177,7 +173,6 @@ function Cursor:before_end(node)
       ((self.row == end_row) and
        (self.column  < end_column))
 end
-
 
 
 return Cursor
