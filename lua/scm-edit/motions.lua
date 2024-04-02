@@ -209,6 +209,10 @@ local M = {}
 
 
 function M.prev_element_start()
+   if not pred.is_code(Cursor.get_node()) then
+      return vim.cmd[[b]]
+   end
+
    with_count(vim.v.count1, function()
       jump_to("prev", "start", function(node, cursor)
          return node
@@ -221,6 +225,10 @@ end
 
 
 function M.prev_element_end()
+   if not pred.is_code(Cursor.get_node()) then
+      return vim.cmd[[ge]]
+   end
+
    with_count(vim.v.count1, function()
       jump_to("prev", "end", function(node, cursor)
          return node
@@ -233,6 +241,10 @@ end
 
 
 function M.prev_form_start()
+   if not pred.is_code(Cursor.get_node()) then
+      return vim.cmd[[B]]
+   end
+
    local count = vim.v.count1
    vim.cmd[[normal! m']]
 
@@ -247,6 +259,10 @@ end
 
 
 function M.next_element_start()
+   if not pred.is_code(Cursor.get_node()) then
+      return vim.cmd[[w]]
+   end
+
    with_count(vim.v.count1, function()
       jump_to("next", "start", function(node, cursor)
          return node
@@ -259,6 +275,10 @@ end
 
 
 function M.next_element_end()
+   if not pred.is_code(Cursor.get_node()) then
+      return vim.cmd[[e]]
+   end
+
    with_count(vim.v.count1, function()
       jump_to("next", "end", function(node, cursor)
          return node
@@ -271,6 +291,10 @@ end
 
 
 function M.next_form_start()
+   if not pred.is_code(Cursor.get_node()) then
+      return vim.cmd[[W]]
+   end
+
    local count = vim.v.count1
    vim.cmd[[normal! m']]
 

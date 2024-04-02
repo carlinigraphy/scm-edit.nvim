@@ -24,6 +24,17 @@ end
 --]]
 
 
+function M.is_code(node)
+   assert(node)
+   local type = node:type()
+   return
+      not type == "comment"         and
+      not type == "block_comment"   and
+      not type == "string"          and
+      not type == "escape_sequence"
+end
+
+
 ---@param node TSNode
 ---@return boolean
 function M.is_comment(node)
