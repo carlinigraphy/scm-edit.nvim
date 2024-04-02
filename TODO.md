@@ -20,10 +20,6 @@ When in a non-code context, motions use default mappings.
 When in a code context, can use w/W/b/B/e for moving about forms / elements.
 
 
-## README format
-Either switch to .md, or figure out how to run `asciidoctor` and upload HTML to hg.sr.ht.
-
-
 ## Bugs
 - [ ] If after the opening `(` of the final form of a program, motions in both directions do not work
       - Seemingly catching the early return here
