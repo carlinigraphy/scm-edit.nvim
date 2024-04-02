@@ -27,22 +27,11 @@ end
 function M.is_non_code(node)
    assert(node)
    local type = node:type()
-
-   local rv =
+   return
       type == "comment"         or
       type == "block_comment"   or
       type == "string"          or
       type == "escape_sequence"
-
-   print(table.concat({
-      "comment:", tostring(type == "comment"),
-      tostring(type == "block_comment"),
-      "string:", tostring(type == "string"),
-      tostring(type == "escape_sequence"),
-      "==", tostring(rv)
-   }, " "))
-
-   return rv
 end
 
 
