@@ -24,14 +24,25 @@ end
 --]]
 
 
-function M.is_code(node)
+function M.is_non_code(node)
    assert(node)
    local type = node:type()
-   return
-      not type == "comment"         and
-      not type == "block_comment"   and
-      not type == "string"          and
-      not type == "escape_sequence"
+
+   local rv =
+      type == "comment"         or
+      type == "block_comment"   or
+      type == "string"          or
+      type == "escape_sequence"
+
+   print(table.concat({
+      "comment:", tostring(type == "comment"),
+      tostring(type == "block_comment"),
+      "string:", tostring(type == "string"),
+      tostring(type == "escape_sequence"),
+      "==", tostring(rv)
+   }, " "))
+
+   return rv
 end
 
 
