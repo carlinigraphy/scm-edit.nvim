@@ -1,3 +1,7 @@
+<!---
+  vim: sw=2 ts=2 sts=2
+-->
+
 # TODO
 
 ## Contextual movement
@@ -6,24 +10,20 @@ Repeated movements should stay within the same context.
     * stay within contextual boundaries, or
     * jump over intermediate contexts to the next match.
 
-## Relative positions
-May be useful to have predicates w/ cursor relative to a node, and node
-relative to the cursor.
-They would be slightly different.
+### 2024-03-27
+As expected, my opinions have changed as I've actually used the plugin to edit code.
 
-Cursor:
-  - `before_node_start`
-  - `before_node_end`
-  - `after_node_start`
-  - `after_node_end`
+I'm starting to once again think this is a good idea.
+Though the editing model must be extraordinarily simple.
 
-Node:
-    - `before_cursor`
-      - i.e., `after_node_end`
-    - `after_cursor`
-      - i.e., `before_node_start`
+When in a non-code context, motions use default mappings.
+When in a code context, can use w/W/b/B/e for moving about forms / elements.
 
 
-<!---
-  vim: sw=2 ts=2 sts=2
--->
+## README format
+Either switch to .md, or figure out how to run `asciidoctor` and upload HTML to hg.sr.ht.
+
+
+## Bugs
+- [ ] If after the opening `(` of the final form of a program, motions in both directions do not work
+      - Seemingly catching the early return here
