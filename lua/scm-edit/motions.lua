@@ -247,7 +247,7 @@ end
 function M.prev_form_start()
    local count1 = vim.v.count1
    if pred.is_non_code(Cursor.get_node()) then
-      return vim.cmd("normal! " .. count1 .. "ge")
+      return vim.cmd("normal! " .. count1 .. "B")
    end
 
    vim.cmd[[normal! m']]

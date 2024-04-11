@@ -12,8 +12,8 @@ return {
       vim.keymap.set({'n', 'x', 'o'}, 'b',  motions.prev_element_start)
       vim.keymap.set({'n', 'x', 'o'}, 'w',  motions.next_element_start)
 
-      vim.keymap.set({'n', 'x', 'o'}, 'e',  motions.next_element_end)
-      vim.keymap.set({'n', 'x', 'o'}, 'ge', motions.prev_element_end)
+      vim.keymap.set({'n', 'x'}     , 'e',  motions.next_element_end)
+      vim.keymap.set({'n', 'x'}     , 'ge', motions.prev_element_end)
 
       vim.keymap.set({'n', 'x', 'o'}, 'B',  motions.prev_form_start)
       vim.keymap.set({'n', 'x', 'o'}, 'W',  motions.next_form_start)
