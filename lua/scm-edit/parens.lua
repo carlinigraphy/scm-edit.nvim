@@ -8,20 +8,12 @@ local get_node_text = vim.treesitter.get_node_text
 ---@return string
 local function collect_parens(node)
    local stack = ""
-   local matching = {
-      ["("] = ")",
-      ["["] = "]",
-      ["{"] = "}",
-   }
-
    for child in node:iter_children() do
       stack = (
          not child:named()
-         and matching[get_node_text(child, 0)]
          or ""
       ) .. stack
    end
-
    return stack
 end
 

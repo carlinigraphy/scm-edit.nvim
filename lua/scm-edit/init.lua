@@ -20,8 +20,8 @@ return {
       vim.keymap.set({'n', 'x', 'o'}, 'B',  motions.prev_form_start, opts)
       vim.keymap.set({'n', 'x', 'o'}, 'W',  motions.next_form_start, opts)
 
-      vim.keymap.set('i', '<C-j>', parens.close_all, opts)
-      vim.keymap.set('i', '<C-k>', parens.close_one, opts)
+      --vim.keymap.set('i', '<C-j>', parens.close_all, opts)
+      --vim.keymap.set('i', '<C-k>', parens.close_one, opts)
       vim.keymap.set('n', 'st'   , parens.toggle   , opts)
    end,
 }
